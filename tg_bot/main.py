@@ -41,5 +41,14 @@ def get_auction_history(region, item_id):
 
 dict = get_auction_history(region="ru", item_id="dmjwn")
 for i in dict:
-    print(dict.get(i))
+    print(f"{dict} : {dict.get(i)}")
+
+
+def get_auction_active_lots(item_id, region):
+    headers = {"Authorization" : TOKEN}
+    url = f"https://eapi.stalcraft.net/{region}/auction/{item_id}/lots"
+    response1 = get(url, headers=headers)
+    return response1.json()
+
+
     
