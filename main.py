@@ -19,7 +19,7 @@ dp = Dispatcher()
 # Команда /start
 @dp.message(filters.Command("start"))
 async def start_handler(message: types.Message):
-    url = f"https://exbo.net/oauth/authorize?client_id=788&redirect_uri=https://bezachka.github.io/exbo-oauth/callback.html&response_type=code&state={message.chat.id}"
+    url = f"https://exbo.net/oauth/authorize?client_id=788&redirect_uri=https://sc-x-db-bot.onrender.com/callback&response_type=code&state={message.chat.id}"
     auth_button = InlineKeyboardButton(
         text="Войти через EXBO",
         url=url
