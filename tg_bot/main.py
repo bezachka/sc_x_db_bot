@@ -1,27 +1,47 @@
-from fastapi import FastAPI, Request
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, types, filters
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import asyncio
 import os
+from pathlib import Path
+import re
+from dotenv import load_dotenv
 
-API_TOKEN = os.getenv("BOT_TOKEN")  # токен бота из переменных окружения
-bot = Bot(API_TOKEN)
+# Загружаем токен
+BASE_DIR = Path(__file__).parent
+load_dotenv(BASE_DIR / "keys.env") 
+
+API_TOKEN = os.getenv("BOT_TOKEN")
+print(API_TOKEN)
+
+bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
-app = FastAPI()
 
-# Endpoint для получения code
-@app.post("/oauth")
-async def oauth(request: Request):
-    data = await request.json()
-    code = data.get("code")
-    chat_id = data.get("state")
+# Команда /start
+@dp.message(filters.Command("start"))
+async def start_handler(message: types.Message):
+    url = f"https://exbo.net/oauth/authorize?client_id=788&redirect_uri=https://bezachka.github.io/exbo-oauth/callback.html&response_type=code&state={message.chat.id}"
+    auth_button = InlineKeyboardButton(
+        text="Войти через EXBO",
+        url=url
+    )
+    # inline_keyboard — список списков кнопок
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[auth_button]])
 
-    if code and chat_id:
-        await bot.send_message(chat_id, f"Ваш EXBO code: {code}")
-        print(f"Получен code: {code} для chat_id: {chat_id}")
-        return {"status": "ok"}
-    return {"status": "error", "message": "Missing code or state"}
+    await message.answer("Привет! Авторизуйтесь через EXBO:", reply_markup=keyboard)
+
+@dp.message()
+async def oauth_handler(message: types.Message):
+    if message.text and message.text.startswith("exbo_oauth_code:"):
+        code = message.text.split(":")[1]
+        print("CODE =", code)
+        await message.delete()
+        await message.answer("Авторизация успешно завершена!")
+
 
 # Запуск бота
-@app.on_event("startup")
-async def startup():
-    asyncio.create_task(dp.start_polling(bot))
+async def main():
+    print("Бот запущен...")
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
