@@ -5,6 +5,7 @@ from pathlib import Path
 from datetime import datetime
 import json
 import base64
+from server import get_code
 
 
 BASE_DIR = Path(__file__).parent
@@ -23,11 +24,10 @@ data = {
     }
 
 
-url=f"https://exbo.net/oauth/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope=&response_type=code"
 
-response = post(url="https://exbo.net/oauth/token", data=data)
 
-print(url)
+response = post(url="https://exbo.net/oauth/authorize", data=data)
+
 
 # TOKEN = "Bearer " + response.json()["access_token"]
 

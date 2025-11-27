@@ -4,6 +4,7 @@ import asyncio
 import os
 from pathlib import Path
 import re
+from server import get_code
 from dotenv import load_dotenv
 
 # Загружаем токен
@@ -19,7 +20,7 @@ dp = Dispatcher()
 # Команда /start
 @dp.message(filters.Command("start"))
 async def start_handler(message: types.Message):
-    url = f"https://exbo.net/oauth/authorize?client_id=788&redirect_uri=https://sc-x-db-bot.onrender.com/callback&response_type=code&state={message.chat.id}"
+    url = f"https://exbo.net/oauth/authorize?client_id=788&redirect_uri=https://sc-x-db-bot.onrender.com/callback&response_type=code&state={message.chat.id}_{message.from_user.id}"
     auth_button = InlineKeyboardButton(
         text="Войти через EXBO",
         url=url

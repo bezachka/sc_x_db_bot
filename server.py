@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import asyncio
+import json
 
 # --- Настройка окружения ---
 BASE_DIR = Path(__file__).parent
@@ -15,21 +16,29 @@ bot = Bot(token=BOT_TOKEN)
 
 app = FastAPI()
 
+
 # Простое хранилище для code
 codes_storage = {}
+
+def get_code():
+    return codes_storage[0]
+
 
 @app.get("/callback")
 async def callback(request: Request):
     code = request.query_params.get("code")
-    state = request.query_params.get("state")  # здесь chat_id или любое значение
+    info = request.query_params.get("state")
+    state = info.split("_")[0]
+    id = info.split("_")[1]
 
     if code:
         # Сохраняем код в Python
-        codes_storage[state] = code
-        print(f"Получен code={code} для state={state}")
+        data = {id : {"code" : code}}
 
-        # Можно сразу отправить сообщение в Telegram (опционально)
-        await bot.send_message(chat_id=int(state), text=f"Ваш EXBO code: {code}")
+        with open("data.json", "w", encoding="utf-8") as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
+
+        await bot.send_message(chat_id=int(state), text=f"Авторизация прошла успешно!")
 
     # Отдаем HTML пользователю
     with open(BASE_DIR / "callback.html", "r", encoding="utf-8") as f:
