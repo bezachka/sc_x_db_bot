@@ -17,8 +17,8 @@ print(API_TOKEN)
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
-# Команда /start
-@dp.message(filters.Command("start"))
+# Команда /auth
+@dp.message(filters.Command("auth"))
 async def start_handler(message: types.Message):
     url = f"https://exbo.net/oauth/authorize?client_id=788&redirect_uri=https://sc-x-db-bot.onrender.com/callback&response_type=code&state={message.chat.id}_{message.from_user.id}"
     auth_button = InlineKeyboardButton(
@@ -30,14 +30,10 @@ async def start_handler(message: types.Message):
 
     await message.answer("Привет! Авторизуйтесь через EXBO:", reply_markup=keyboard)
 
-@dp.message()
-async def oauth_handler(message: types.Message):
-    if message.text and message.text.startswith("exbo_oauth_code:"):
-        code = message.text.split(":")[1]
-        print("CODE =", code)
-        await message.delete()
-        await message.answer("Авторизация успешно завершена!")
 
+@dp.message(filters.Command("start"))
+async def start_handler(message: types.Message):
+    ...
 
 # Запуск бота
 async def main():
