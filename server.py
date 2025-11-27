@@ -40,7 +40,7 @@ async def callback(request: Request):
         with open("data.json", "w", encoding="utf-8") as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
 
-        await bot.send_message(chat_id=int(state), text=data)
+        await bot.send_message(chat_id=int(state), text=f"{id} : {code}")
 
     # Отдаем HTML пользователю
     with open(BASE_DIR / "callback.html", "r", encoding="utf-8") as f:
