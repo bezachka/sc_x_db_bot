@@ -30,7 +30,7 @@ async def callback(request: Request):
         data = {id : {"code" : code}}
 
         with open(DATA_FILE, "w", encoding="utf-8") as file:
-            json.dump(data, DATA_FILE, ensure_ascii=False, indent=4)
+            json.dump(data, file, ensure_ascii=False, indent=4)
 
         await bot.send_message(chat_id=int(state), text=f"Авторизация прошла успешно!")
 
