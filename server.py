@@ -35,10 +35,12 @@ async def callback(request: Request):
         # Сохраняем код в Python
         data = {id : {"code" : code}}
 
+        
+
         with open("data.json", "w", encoding="utf-8") as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
 
-        await bot.send_message(chat_id=int(state), text=f"Авторизация прошла успешно!")
+        await bot.send_message(chat_id=int(state), text=data)
 
     # Отдаем HTML пользователю
     with open(BASE_DIR / "callback.html", "r", encoding="utf-8") as f:
