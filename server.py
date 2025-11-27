@@ -2,39 +2,78 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from aiogram import Bot
 import os
+import asyncpg
 from pathlib import Path
 from dotenv import load_dotenv
-import asyncio
-import json
 
-# --- Настройка окружения ---
 BASE_DIR = Path(__file__).parent
 load_dotenv(BASE_DIR / "keys.env")
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-bot = Bot(token=BOT_TOKEN)
+DATABASE_URL = os.getenv("DATABASE_URL")  # Добавляем эту строку
 
+bot = Bot(token=BOT_TOKEN)
 app = FastAPI()
 
-DATA_FILE = BASE_DIR / "data.json"
+async def init_db():
+    """Создаем таблицу при старте"""
+    try:
+        conn = await asyncpg.connect(DATABASE_URL)
+        await conn.execute('''
+            CREATE TABLE IF NOT EXISTS auth_codes (
+                id SERIAL PRIMARY KEY,
+                user_id TEXT UNIQUE NOT NULL,
+                code TEXT NOT NULL,
+                state TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        await conn.close()
+        print("✅ База данных готова")
+    except Exception as e:
+        print(f"❌ Ошибка базы: {e}")
+
+@app.on_event("startup")
+async def startup():
+    await init_db()
+
+async def save_to_db(user_id: str, code: str, state: str):
+    """Сохраняем в PostgreSQL"""
+    try:
+        conn = await asyncpg.connect(DATABASE_URL)
+        await conn.execute('''
+            INSERT INTO auth_codes (user_id, code, state) 
+            VALUES ($1, $2, $3)
+        ''', user_id, code, state)
+        await conn.close()
+        return True
+    except Exception as e:
+        print(f"Ошибка сохранения: {e}")
+        return False
 
 @app.get("/callback")
 async def callback(request: Request):
     code = request.query_params.get("code")
     info = request.query_params.get("state")
-    state = info.split("_")[0]
-    id = info.split("_")[1]
+    
+    if code and info:
+        state = info.split("_")[0]
+        user_id = info.split("_")[1]
+        
+        # Сохраняем в базу вместо JSON
+        success = await save_to_db(user_id, code, state)
+        
+        if success:
+            await bot.send_message(
+                chat_id=int(state), 
+                text="✅ Авторизация успешна! Данные в базе."
+            )
+        else:
+            await bot.send_message(
+                chat_id=int(state), 
+                text="⚠️ Ошибка сохранения"
+            )
 
-    if code:
-        # Сохраняем код в Python
-        data = {id : {"code" : code}}
-
-        with open(DATA_FILE, "w", encoding="utf-8") as file:
-            json.dump(data, file, ensure_ascii=False, indent=4)
-
-        await bot.send_message(chat_id=int(state), text=f"Авторизация прошла успешно!")
-
-    # Отдаем HTML пользователю
     with open(BASE_DIR / "callback.html", "r", encoding="utf-8") as f:
         html_content = f.read()
     return HTMLResponse(content=html_content)

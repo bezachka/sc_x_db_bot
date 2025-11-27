@@ -3,4 +3,5 @@ uvicorn
 httpx
 python-dotenv
 aiogram
+asyncpg==0.29.0
 

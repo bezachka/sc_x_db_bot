@@ -3,8 +3,6 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import asyncio
 import os
 from pathlib import Path
-import re
-from server import get_code
 from dotenv import load_dotenv
 
 # Загружаем токен
