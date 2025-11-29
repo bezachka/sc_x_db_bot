@@ -22,7 +22,7 @@ async def init_db():
     try:
         conn = await asyncpg.connect(DATABASE_URL)
         await conn.execute('''
-            CREATE TABLE IF NOT EXISTS auth_codes (
+            CREATE TABLE IF NOT EXISTS auth_codes_new (
                 id SERIAL PRIMARY KEY,
                 user_id TEXT UNIQUE NOT NULL,
                 code TEXT NOT NULL,
@@ -46,7 +46,7 @@ async def save_to_db(user_id: str, code: str, state: str):
         token = get_auth_token(code)
         conn = await asyncpg.connect(DATABASE_URL)
         await conn.execute('''
-            INSERT INTO auth_codes (user_id, code, state, token) 
+            INSERT INTO auth_codes_new (user_id, code, state, token) 
             VALUES ($1, $2, $3, $4)
             ON CONFLICT (user_id) 
             DO UPDATE SET 
@@ -66,7 +66,7 @@ async def get_auth_code_by_user_id(user_id: str):
     try:
         conn = await asyncpg.connect(DATABASE_URL)
         row = await conn.fetchrow('''
-            SELECT token FROM auth_codes 
+            SELECT token FROM auth_codes_new 
             WHERE user_id = $1
         ''', user_id)
         await conn.close()
@@ -81,7 +81,7 @@ async def delete_user_data(user_id: str):
         conn = await asyncpg.connect(DATABASE_URL)
         
         # Проверяем существование пользователя
-        user_exists = await conn.fetchval('SELECT 1 FROM auth_codes WHERE user_id = $1', user_id)
+        user_exists = await conn.fetchval('SELECT 1 FROM auth_codes_new WHERE user_id = $1', user_id)
         
         if user_exists:
             await conn.execute('DELETE FROM auth_codes WHERE user_id = $1', user_id)
