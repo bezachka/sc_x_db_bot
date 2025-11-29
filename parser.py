@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from datetime import datetime
 import requests
-from server import get_code
+
 
 
 BASE_DIR = Path(__file__).parent

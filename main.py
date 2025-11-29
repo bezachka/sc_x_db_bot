@@ -4,7 +4,7 @@ import asyncio
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import requests
+
 from server import get_auth_code_by_user_id
 
 # Загружаем токен
