@@ -41,13 +41,19 @@ async def startup():
     await init_db()
 
 async def save_to_db(user_id: str, code: str, state: str):
-    """Сохраняем в PostgreSQL"""
+    """Сохраняем или обновляем в PostgreSQL"""
     try:
         token = get_auth_token(code)
         conn = await asyncpg.connect(DATABASE_URL)
         await conn.execute('''
             INSERT INTO auth_codes (user_id, code, state, token) 
             VALUES ($1, $2, $3, $4)
+            ON CONFLICT (user_id) 
+            DO UPDATE SET 
+                code = EXCLUDED.code,
+                state = EXCLUDED.state,
+                token = EXCLUDED.token,
+                created_at = CURRENT_TIMESTAMP
         ''', user_id, code, state, token)
         await conn.close()
         return True

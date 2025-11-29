@@ -30,11 +30,16 @@ async def start_handler(message: types.Message):
 
     await message.answer("Привет! Авторизуйтесь через EXBO:", reply_markup=keyboard)
 
-
 @dp.message(filters.Command("start"))
 async def start_handler(message: types.Message):
-    await message.answer(get_auth_code_by_user_id(message.from_user.id))
-
+    # Получаем user_id как строку и обрабатываем результат
+    user_id = str(message.from_user.id)
+    auth_code = await get_auth_code_by_user_id(user_id)
+    
+    if auth_code:
+        await message.answer(f"Ваш код авторизации: {auth_code}")
+    else:
+        await message.answer("Код авторизации не найден. Пожалуйста, сначала авторизуйтесь через /auth")
 # Запуск бота
 async def main():
     print("Бот запущен...")
