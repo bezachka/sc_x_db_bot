@@ -66,7 +66,7 @@ async def get_auth_code_by_user_id(user_id: str):
     try:
         conn = await asyncpg.connect(DATABASE_URL)
         row = await conn.fetchrow('''
-            SELECT token FROM auth_codes_new 
+            SELECT * FROM auth_codes_new 
             WHERE user_id = $1
         ''', user_id)
         await conn.close()
