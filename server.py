@@ -75,6 +75,27 @@ async def get_auth_code_by_user_id(user_id: str):
         print(f"Ошибка получения данных: {e}")
         return None
 
+async def delete_user_data(user_id: str):
+    """Удалить данные конкретного пользователя"""
+    try:
+        conn = await asyncpg.connect(DATABASE_URL)
+        
+        # Проверяем существование пользователя
+        user_exists = await conn.fetchval('SELECT 1 FROM auth_codes WHERE user_id = $1', user_id)
+        
+        if user_exists:
+            await conn.execute('DELETE FROM auth_codes WHERE user_id = $1', user_id)
+            await conn.close()
+            print(f"✅ Данные пользователя {user_id} удалены")
+            return {"status": "success", "message": f"Данные пользователя {user_id} удалены"}
+        else:
+            await conn.close()
+            return {"status": "error", "message": f"Пользователь {user_id} не найден"}
+            
+    except Exception as e:
+        print(f"❌ Ошибка удаления пользователя: {e}")
+        return {"status": "error", "message": str(e)}
+
 @app.get("/callback")
 async def callback(request: Request):
     code = request.query_params.get("code")
@@ -115,3 +136,10 @@ async def callback(request: Request):
     with open(BASE_DIR / "callback.html", "r", encoding="utf-8") as f:
         html_content = f.read()
     return HTMLResponse(content=html_content)
+
+
+@app.get(f"/admin/delete-user/884651291")
+async def admin_delete_user(user_id = 88465129):
+    """API endpoint для удаления данных конкретного пользователя"""
+    result = await delete_user_data(user_id)
+    return result

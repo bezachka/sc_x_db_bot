@@ -41,6 +41,11 @@ async def start_handler(message: types.Message):
     else:
         await message.answer("Код авторизации не найден. Пожалуйста, сначала авторизуйтесь через /auth")
 # Запуск бота
+
+
+@dp.message(filters.Command("clean"))
+async def start_handler(message: types.Message):
+    await message.answer(str(message.from_user.id))
 async def main():
     print("Бот запущен...")
     await dp.start_polling(bot)
