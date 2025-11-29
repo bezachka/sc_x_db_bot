@@ -80,22 +80,36 @@ async def callback(request: Request):
     code = request.query_params.get("code")
     info = request.query_params.get("state")
     
+    print(f"📥 Получен callback: code={code}, state={info}")
+    
     if code and info:
-        state = info.split("_")[0]
-        user_id = info.split("_")[1]
-        
-        # Сохраняем в базу вместо JSON
-        success = await save_to_db(user_id, code, state)
-        
-        if success:
+        try:
+            state = info.split("_")[0]
+            user_id = info.split("_")[1]
+            
+            print(f"🔍 Разобраны данные: state={state}, user_id={user_id}")
+            
+            success = await save_to_db(user_id, code, state)
+            
+            if success:
+                await bot.send_message(
+                    chat_id=int(state), 
+                    text="✅ Авторизация успешна! Данные в базе."
+                )
+            else:
+                await bot.send_message(
+                    chat_id=int(state), 
+                    text="⚠️ Ошибка сохранения - смотри логи сервера"
+                )
+                
+        except Exception as e:
+            print(f"❌ Ошибка в callback: {e}")
+            import traceback
+            print(f"🔍 Трассировка callback: {traceback.format_exc()}")
+            
             await bot.send_message(
                 chat_id=int(state), 
-                text="✅ Авторизация успешна! Данные в базе."
-            )
-        else:
-            await bot.send_message(
-                chat_id=int(state), 
-                text="⚠️ Ошибка сохранения"
+                text=f"❌ Ошибка обработки: {str(e)}"
             )
 
     with open(BASE_DIR / "callback.html", "r", encoding="utf-8") as f:
