@@ -33,10 +33,13 @@ def get_auth_token(code):
     "code" : code,
     "grant_type" : "authorization_code",
     "redirect_uri" : "https://sc-x-db-bot.onrender.com/callback"
-}
+    }
 
     response = requests.post(url = url, params=params)
     return "Bearer " + response.json()["access_token"]
+
+
+    
 
 
 response = post(url="https://exbo.net/oauth/token", data=data)
