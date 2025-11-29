@@ -4,6 +4,8 @@ import asyncio
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import requests
+from server import get_auth_code_by_user_id
 
 # Загружаем токен
 BASE_DIR = Path(__file__).parent
@@ -31,7 +33,7 @@ async def start_handler(message: types.Message):
 
 @dp.message(filters.Command("start"))
 async def start_handler(message: types.Message):
-    ...
+    await message.answer(get_auth_code_by_user_id(message.from_user.id))
 
 # Запуск бота
 async def main():

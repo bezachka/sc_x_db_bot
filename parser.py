@@ -3,8 +3,7 @@ from dotenv import load_dotenv, find_dotenv
 import os
 from pathlib import Path
 from datetime import datetime
-import json
-import base64
+import requests
 from server import get_code
 
 
@@ -25,8 +24,22 @@ data = {
 
 
 
+def get_auth_token(code):
+    url = "https://exbo.net/oauth/token"
 
-response = post(url="https://exbo.net/oauth/authorize", data=data)
+    params = {
+    "client_id" : CLIENT_ID,
+    "client_secret" : CLIENT_SECRET,
+    "code" : code,
+    "grant_type" : "authorization_code",
+    "redirect_uri" : "https://sc-x-db-bot.onrender.com/callback"
+}
+
+    response = requests.post(url = url, params=params)
+    return "Bearer " + response.json()["access_token"]
+
+
+response = post(url="https://exbo.net/oauth/token", data=data)
 
 
 # TOKEN = "Bearer " + response.json()["access_token"]

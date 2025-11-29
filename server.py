@@ -5,6 +5,8 @@ import os
 import asyncpg
 from pathlib import Path
 from dotenv import load_dotenv
+from parser import get_auth_token
+
 
 BASE_DIR = Path(__file__).parent
 load_dotenv(BASE_DIR / "keys.env")
@@ -25,6 +27,7 @@ async def init_db():
                 user_id TEXT UNIQUE NOT NULL,
                 code TEXT NOT NULL,
                 state TEXT NOT NULL,
+                token TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
@@ -40,16 +43,31 @@ async def startup():
 async def save_to_db(user_id: str, code: str, state: str):
     """Сохраняем в PostgreSQL"""
     try:
+        token = get_auth_token(code)
         conn = await asyncpg.connect(DATABASE_URL)
         await conn.execute('''
-            INSERT INTO auth_codes (user_id, code, state) 
-            VALUES ($1, $2, $3)
-        ''', user_id, code, state)
+            INSERT INTO auth_codes (user_id, code, state, token) 
+            VALUES ($1, $2, $3, $4)
+        ''', user_id, code, state, token)
         await conn.close()
         return True
     except Exception as e:
         print(f"Ошибка сохранения: {e}")
         return False
+    
+async def get_auth_code_by_user_id(user_id: str):
+    """Получить запись по user_id"""
+    try:
+        conn = await asyncpg.connect(DATABASE_URL)
+        row = await conn.fetchrow('''
+            SELECT token FROM auth_codes 
+            WHERE user_id = $1
+        ''', user_id)
+        await conn.close()
+        return row
+    except Exception as e:
+        print(f"Ошибка получения данных: {e}")
+        return None
 
 @app.get("/callback")
 async def callback(request: Request):
