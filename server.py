@@ -139,7 +139,7 @@ async def callback(request: Request):
 
 
 @app.get(f"/admin/delete-user/884651291")
-async def admin_delete_user(user_id = 88465129):
+async def admin_delete_user(user_id = "88465129"):
     """API endpoint для удаления данных конкретного пользователя"""
     result = await delete_user_data(user_id)
     return result
