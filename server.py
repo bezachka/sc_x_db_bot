@@ -72,7 +72,9 @@ async def get_auth_code_by_user_id(user_id: str):
         await conn.close()
         return row
     except Exception as e:
-        print(f"Ошибка получения данных: {e}")
+        print(f"❌ Ошибка получения данных: {type(e).__name__}: {e}")
+        import traceback
+        print(f"🔍 Трассировка:\n{traceback.format_exc()}")
         return None
 
 async def delete_user_data(user_id: str):
